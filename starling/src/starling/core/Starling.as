@@ -506,8 +506,14 @@ package starling.core
         {
             return mStage;
         }
+
+        /** The Flash Stage3D object Starling renders into. */
+        public function get stage3D():Stage3D
+        {
+            return mStage3D;
+        }
         
-        /** The Flash (2D) stage Starling renders beneath. */
+        /** The Flash (2D) stage object Starling renders beneath. */
         public function get nativeStage():flash.display.Stage
         {
             return mNativeStage;
