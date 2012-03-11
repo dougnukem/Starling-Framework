@@ -13,11 +13,14 @@ package
     import scenes.TextureScene;
     import scenes.TouchScene;
     
+    import starling.core.Starling;
     import starling.display.Button;
     import starling.display.Image;
     import starling.display.Sprite;
     import starling.events.Event;
+    import starling.text.TextField;
     import starling.textures.Texture;
+    import starling.utils.VAlign;
 
     public class Game extends Sprite
     {
@@ -37,8 +40,6 @@ package
             addChild(mMainMenu);
             
             var logo:Image = new Image(Assets.getTexture("Logo"));
-            logo.x = int((bg.width - logo.width) / 2);
-            logo.y = 50;
             mMainMenu.addChild(logo);
             
             var scenesToCreate:Array = [
@@ -70,6 +71,15 @@ package
             }
             
             addEventListener(Scene.CLOSING, onSceneClosing);
+            
+            // show information about rendering method (hardware/software)
+            var driverInfo:String = Starling.context.driverInfo;
+            var infoText:TextField = new TextField(310, 64, driverInfo, "Verdana", 10);
+            infoText.x = 5;
+            infoText.y = 475 - infoText.height;
+            infoText.vAlign = VAlign.BOTTOM;
+            infoText.touchable = false;
+            mMainMenu.addChild(infoText);
         }
         
         private function onButtonTriggered(event:Event):void
