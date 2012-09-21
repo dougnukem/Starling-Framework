@@ -1,5 +1,6 @@
 # Build and Release Folders
 bin-debug/
+bin/
 bin-release/
 starling/doc/html/
 
@@ -7,6 +8,9 @@ starling/doc/html/
 .settings/
 .flexProperties
 .FlexUnitSettings
+.project
+.flexLibProperties
+.actionScriptProperties
 
 # OS X folders
 .DS_Store
