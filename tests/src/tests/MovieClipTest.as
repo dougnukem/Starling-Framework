@@ -10,6 +10,8 @@
 
 package tests
 {
+    import flash.display3D.Context3DTextureFormat;
+    
     import flexunit.framework.Assert;
     
     import org.flexunit.assertThat;
@@ -29,11 +31,12 @@ package tests
         {
             var fps:Number = 4.0;
             var frameDuration:Number = 1.0 / fps;
+            var format:String = Context3DTextureFormat.BGRA;
             
-            var texture0:Texture = new ConcreteTexture(null, 16, 16, false, false);
-            var texture1:Texture = new ConcreteTexture(null, 16, 16, false, false);
-            var texture2:Texture = new ConcreteTexture(null, 16, 16, false, false);
-            var texture3:Texture = new ConcreteTexture(null, 16, 16, false, false);
+            var texture0:Texture = new ConcreteTexture(null, format, 16, 16, false, false);
+            var texture1:Texture = new ConcreteTexture(null, format, 16, 16, false, false);
+            var texture2:Texture = new ConcreteTexture(null, format, 16, 16, false, false);
+            var texture3:Texture = new ConcreteTexture(null, format, 16, 16, false, false);
             
             var movie:MovieClip = new MovieClip(new <Texture>[texture0], fps);
             
@@ -97,16 +100,17 @@ package tests
         {
             var fps:Number = 4.0;
             var frameDuration:Number = 1.0 / fps;
+            var format:String = Context3DTextureFormat.BGRA;
             
-            var texture0:Texture = new ConcreteTexture(null, 16, 16, false, false);
-            var texture1:Texture = new ConcreteTexture(null, 16, 16, false, false);
-            var texture2:Texture = new ConcreteTexture(null, 16, 16, false, false);
-            var texture3:Texture = new ConcreteTexture(null, 16, 16, false, false);
+            var texture0:Texture = new ConcreteTexture(null, format, 16, 16, false, false);
+            var texture1:Texture = new ConcreteTexture(null, format, 16, 16, false, false);
+            var texture2:Texture = new ConcreteTexture(null, format, 16, 16, false, false);
+            var texture3:Texture = new ConcreteTexture(null, format, 16, 16, false, false);
             
             var movie:MovieClip = new MovieClip(new <Texture>[texture0], fps);
-            movie.addFrame(texture1);
             movie.addFrame(texture2, null, 0.5);
             movie.addFrame(texture3);
+            movie.addFrameAt(0, texture1);
             
             Assert.assertEquals(0, movie.currentFrame);
             movie.advanceTime(frameDuration / 2.0);
@@ -143,11 +147,9 @@ package tests
         [Test]
         public function testChangeFps():void
         {
-            var texture0:Texture = new ConcreteTexture(null, 16, 16, false, false);
-            var texture1:Texture = new ConcreteTexture(null, 16, 16, false, false);
-            var texture2:Texture = new ConcreteTexture(null, 16, 16, false, false);
+            var frames:Vector.<Texture> = createFrames(3);
+            var movie:MovieClip = new MovieClip(frames, 4.0);
             
-            var movie:MovieClip = new MovieClip(new <Texture>[texture0, texture1, texture2], 4.0);
             assertThat(movie.fps, closeTo(4.0, E));
             
             movie.fps = 3.0;
@@ -162,9 +164,6 @@ package tests
             movie.fps = 6.0;
             assertThat(movie.getFrameDuration(1), closeTo(0.5, E));
             assertThat(movie.getFrameDuration(0), closeTo(1.0 / 6.0, E));
-            
-            movie.fps = 0.0;
-            assertThat(movie.fps, closeTo(0.0, E));
         }
         
         [Test]
@@ -174,27 +173,27 @@ package tests
             var frameDuration:Number = 1.0 / fps;
             var completedCount:int = 0;
             
-            var texture0:Texture = new ConcreteTexture(null, 16, 16, false, false);
-            var texture1:Texture = new ConcreteTexture(null, 16, 16, false, false);
-            var texture2:Texture = new ConcreteTexture(null, 16, 16, false, false);
-            var texture3:Texture = new ConcreteTexture(null, 16, 16, false, false);
-            var textures:Vector.<Texture> = new <Texture>[texture0, texture1, texture2, texture3];
-            
-            var movie:MovieClip = new MovieClip(textures, fps);
+            var frames:Vector.<Texture> = createFrames(4);
+            var movie:MovieClip = new MovieClip(frames, fps);
             movie.addEventListener(Event.COMPLETE, onMovieCompleted);
             movie.loop = false;
             
             Assert.assertFalse(movie.isComplete);
             movie.advanceTime(frameDuration);
+            Assert.assertEquals(1, movie.currentFrame);
             Assert.assertEquals(0, completedCount);
             movie.advanceTime(frameDuration);
+            Assert.assertEquals(2, movie.currentFrame);
             Assert.assertEquals(0, completedCount);
             movie.advanceTime(frameDuration);
+            Assert.assertEquals(3, movie.currentFrame);
             Assert.assertEquals(0, completedCount);
             movie.advanceTime(frameDuration);
+            Assert.assertEquals(3, movie.currentFrame);
             Assert.assertEquals(1, completedCount);
             Assert.assertTrue(movie.isComplete);
             movie.advanceTime(movie.numFrames * 2 * frameDuration);
+            Assert.assertEquals(3, movie.currentFrame);
             Assert.assertEquals(1, completedCount);
             Assert.assertTrue(movie.isComplete);
             
@@ -203,12 +202,16 @@ package tests
             
             Assert.assertFalse(movie.isComplete);
             movie.advanceTime(frameDuration);
+            Assert.assertEquals(1, movie.currentFrame);
             Assert.assertEquals(0, completedCount);
             movie.advanceTime(frameDuration);
+            Assert.assertEquals(2, movie.currentFrame);
             Assert.assertEquals(0, completedCount);
             movie.advanceTime(frameDuration);
+            Assert.assertEquals(3, movie.currentFrame);
             Assert.assertEquals(0, completedCount);
             movie.advanceTime(frameDuration);
+            Assert.assertEquals(0, movie.currentFrame);
             Assert.assertEquals(1, completedCount);
             movie.advanceTime(movie.numFrames * 2 * frameDuration);
             Assert.assertEquals(3, completedCount);
@@ -220,11 +223,34 @@ package tests
         }
         
         [Test]
+        public function testChangeCurrentFrameInCompletedEvent():void
+        {
+            var fps:Number = 4.0;
+            var frameDuration:Number = 1.0 / fps;
+            var completedCount:int = 0;
+            
+            var frames:Vector.<Texture> = createFrames(4);
+            var movie:MovieClip = new MovieClip(frames, fps);
+            
+            movie.loop = true;
+            movie.addEventListener(Event.COMPLETE, onMovieCompleted);
+            movie.advanceTime(1.75);
+            
+            Assert.assertFalse(movie.isPlaying);
+            Assert.assertEquals(0, movie.currentFrame);
+
+            function onMovieCompleted(event:Event):void
+            {
+                movie.pause();
+                movie.currentFrame = 0;
+            }
+        }
+        
+        [Test]
         public function testRemoveAllFrames():void
         {
-            var texture0:Texture = new ConcreteTexture(null, 16, 16, false, false);
-            var texture1:Texture = new ConcreteTexture(null, 16, 16, false, false);
-            var movie:MovieClip = new MovieClip(new <Texture>[texture0, texture1]);
+            var frames:Vector.<Texture> = createFrames(2);
+            var movie:MovieClip = new MovieClip(frames);
             
             // it must not be allowed to remove the last frame 
             movie.removeFrameAt(0);
@@ -242,5 +268,15 @@ package tests
             Assert.assertTrue(throwsError);
         }
         
+        private function createFrames(count:int):Vector.<Texture>
+        {
+            var frames:Vector.<Texture> = new <Texture>[];
+            var format:String = Context3DTextureFormat.BGRA;
+            
+            for (var i:int=0; i<count; ++i)
+                frames.push(new ConcreteTexture(null, format, 16, 16, false, false));
+            
+            return frames;
+        }
     }
 }

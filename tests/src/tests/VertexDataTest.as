@@ -25,6 +25,26 @@ package tests
         private static const E:Number = 0.001;
         
         [Test]
+        public function testInit():void
+        {
+            var numVertices:int = 3;
+            var vd:VertexData = new VertexData(numVertices);
+            var position:Point = new Point();
+            var texCoords:Point = new Point();
+            
+            for (var i:int=0; i<numVertices; ++i)
+            {
+                vd.getPosition(i, position);
+                vd.getTexCoords(i, texCoords);
+                
+                Helpers.comparePoints(position, new Point());
+                Helpers.comparePoints(texCoords, new Point());
+                Assert.assertEquals(0x0, vd.getColor(i));
+                Assert.assertEquals(1.0, vd.getAlpha(i));
+            }
+        }
+        
+        [Test]
         public function testGetNumVertices():void
         {
             var vd:VertexData = new VertexData(4);
@@ -49,20 +69,18 @@ package tests
         public function testPosition():void
         {
             var vd:VertexData = new VertexData(4);            
-            vd.setPosition(0, 1, 2, 3);
-            vd.setPosition(1, 4, 5, 6);
+            vd.setPosition(0, 1, 2);
+            vd.setPosition(1, 4, 5);
             
-            var position:Vector3D = new Vector3D();
+            var position:Point = new Point();
             
             vd.getPosition(0, position);
             Assert.assertEquals(1, position.x);
             Assert.assertEquals(2, position.y);
-            Assert.assertEquals(3, position.z);
             
             vd.getPosition(1, position);            
             Assert.assertEquals(4, position.x);
             Assert.assertEquals(5, position.y);
-            Assert.assertEquals(6, position.z);
         }
         
         [Test]
@@ -83,7 +101,8 @@ package tests
             
             var alpha:Number = 0.5;
             
-            vd.setColor(2, 0x445566, alpha);
+            vd.setColor(2, 0x445566);
+            vd.setAlpha(2, alpha);
             Assert.assertEquals(0x445566, vd.getColor(2));
             Assert.assertEquals(1.0, vd.getAlpha(1));
             Assert.assertEquals(alpha, vd.getAlpha(2));
@@ -107,7 +126,8 @@ package tests
             Assert.assertEquals(0x112233, vd.getColor(1));
             Assert.assertEquals(1.0, vd.getAlpha(0));
             
-            vd.setColor(2, 0x445566, 0.5);
+            vd.setColor(2, 0x445566);
+            vd.setAlpha(2, 0.5);
             Assert.assertEquals(0x445566, vd.getColor(2));
             Assert.assertEquals(0.5, vd.getAlpha(2));
             
